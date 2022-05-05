@@ -48,10 +48,10 @@ Information about applitool :  https://eyes.applitools.com/ - Able to run locall
 4. Run below command to execute the test with help of `fastlane`
 
 `fastlane scan —scheme ReferenceiOS —device  “Add Device Name”`
-
-                   or 
+  
+  or 
                    
-  fastlane ios test_ui
+`fastlane ios test_ui`
   
 **  Note: To use applitool test with other UI test perform below steps**
   
