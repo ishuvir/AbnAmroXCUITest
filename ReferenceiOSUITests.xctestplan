@@ -1,0 +1,40 @@
+{
+  "configurations" : [
+    {
+      "id" : "FE30361D-899C-45CB-B747-E989A819BDFB",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:ReferenceiOS.xcodeproj",
+          "identifier" : "05D03C65224BA0FB005F6F05",
+          "name" : "ReferenceiOS"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ReferenceiOS.xcodeproj",
+      "identifier" : "05D03C65224BA0FB005F6F05",
+      "name" : "ReferenceiOS"
+    }
+  },
+  "testTargets" : [
+    {
+      "skippedTests" : [
+        "appliEyesTest"
+      ],
+      "target" : {
+        "containerPath" : "container:ReferenceiOS.xcodeproj",
+        "identifier" : "05D03C84224BA0FD005F6F05",
+        "name" : "ReferenceiOSUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,0 +1,125 @@
+os: osx
+language: objective-c
+osx_image: xcode12.2
+notifications:
+    email:
+        - anton.chuev@applitools.com
+
+podfile: ApplitoolsEyes/Podfile
+
+# Install CocoaPods
+install:
+    - pod install --project-directory=ApplitoolsEyes
+
+before_script:
+    # Grab SDK name and version from git tag
+    # Tag format for release-event is, e.g., 'EyesXCUI@8.5.1'
+    - export SDK_NAME=$(cut -d'@' -f1 <<<"$TRAVIS_TAG")
+    - SDK_VERSION=$(cut -d'@' -f2 <<<"$TRAVIS_TAG")
+    - IOS_VERSION="14.2"
+    # Runs only during the release process. Set 'TestReportSandbox' key to false. It means that test reports will go to release sheet. Stops if CHANGELOG.md has the wrong format.
+    - if [[ "$SDK_NAME" && "$SDK_VERSION" ]]; then
+        echo "---- stage before_script for release-event began ----";
+        /usr/libexec/PlistBuddy -c "Set :TestReportSandbox false" "ApplitoolsEyes/${SDK_NAME}Tests/Info.plist";
+        echo "Check if TestReportSandbox was set properly... Should be false";
+        TEST_REPORT_SANDBOX=$(/usr/libexec/PlistBuddy -c "Print :TestReportSandbox" "ApplitoolsEyes/${SDK_NAME}Tests/Info.plist");
+        echo "TestReportSandbox = $TEST_REPORT_SANDBOX";
+        TMP_CHANGELOG=$(sh ApplitoolsEyes/Scripts/extract_change_log.sh "$SDK_VERSION" "ApplitoolsEyes/$SDK_NAME/CHANGELOG.md");
+        CHANGELOG=$([ -z "$TMP_CHANGELOG" ] && echo "THERE IS NO CHANGELOG FOR VERSION $SDK_VERSION"; echo "$TMP_CHANGELOG");
+        if [[ (-z "$TMP_CHANGELOG") ]]; then
+            echo "THE CHANGELOG IS NOT CORRECT";
+            exit 1;
+        fi
+      fi
+      
+# Environment variables:
+# - APPLITOOLS_API_KEY
+# - ALLOWED_RELEASE_COMMITERS
+
+
+stages:
+    - integration-tests
+    - release-event
+    
+jobs:
+    include:
+        - stage: integration-tests
+          if: tag IS blank OR tag =~ ^(EyesXCUI)@[0-9]+\.[0-9]+\.[0-9]+$
+          env:
+              - TEST_SUIT="EyesXCUI Part 1"
+          script:
+                - echo "---- stage eyes-xcui-integration-tests-part1 began ----";
+                - /usr/libexec/PlistBuddy -c "Set :TravisCommitHash $TRAVIS_COMMIT" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                - /usr/libexec/PlistBuddy -c "Set :TravisEventType $TRAVIS_EVENT_TYPE" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                - if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+                    /usr/libexec/PlistBuddy -c "Set :TestReportSandbox false" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                    SCHEME="EyesXCUIFullRegressionPart1";
+                  else
+                    SCHEME="EyesXCUIReleaseRegressionPart1";
+                  fi
+                - sh ApplitoolsEyes/Scripts/run_regression_tests.sh -n "EyesXCUI" -s "$SCHEME" -d "iPhone 11" -o "$IOS_VERSION";
+                
+        - if: tag IS blank OR tag =~ ^(EyesXCUI)@[0-9]+\.[0-9]+\.[0-9]+$
+          env:
+            - TEST_SUIT="EyesXCUI Part 2"
+          script:
+                - echo "---- stage eyes-xcui-integration-tests-part2 began ----";
+                - /usr/libexec/PlistBuddy -c "Set :TravisCommitHash $TRAVIS_COMMIT" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                - /usr/libexec/PlistBuddy -c "Set :TravisEventType $TRAVIS_EVENT_TYPE" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                - if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+                    /usr/libexec/PlistBuddy -c "Set :TestReportSandbox false" "ApplitoolsEyes/EyesXCUITests/Info.plist";
+                    SCHEME="EyesXCUIFullRegressionPart2";
+                  else
+                    SCHEME="EyesXCUIReleaseRegressionPart2";
+                  fi
+                - sh ApplitoolsEyes/Scripts/run_regression_tests.sh -n "EyesXCUI" -s "$SCHEME" -d "iPhone 11" -o "$IOS_VERSION";
+                - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+                    echo "---- stage send-full-regression-mail began ----";
+                    sh ApplitoolsEyes/Scripts/send_full_regression_mail.sh "ios_xcui";
+                  fi
+                
+        - if: tag IS blank OR tag =~ ^(EyesImages)@[0-9]+\.[0-9]+\.[0-9]+$
+          env:
+            - TEST_SUIT="EyesImages"
+          script:
+                - echo "---- stage eyes-images-integration-tests began ----";
+                - /usr/libexec/PlistBuddy -c "Set :TravisCommitHash $TRAVIS_COMMIT" "ApplitoolsEyes/EyesImagesTests/Info.plist";
+                - /usr/libexec/PlistBuddy -c "Set :TravisEventType $TRAVIS_EVENT_TYPE" "ApplitoolsEyes/EyesImagesTests/Info.plist";
+                - if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+                    /usr/libexec/PlistBuddy -c "Set :TestReportSandbox false" "ApplitoolsEyes/EyesImagesTests/Info.plist";
+                    SCHEME="EyesImagesFullRegression";
+                  else
+                    SCHEME="EyesImagesReleaseRegression";
+                  fi
+                - sh ApplitoolsEyes/Scripts/run_regression_tests.sh -n "EyesImages" -s "$SCHEME" -d "iPhone 11" -o "$IOS_VERSION";
+                - if [[ $TRAVIS_EVENT_TYPE = cron ]]; then
+                    echo "---- stage send-full-regression-mail began ----";
+                    sh ApplitoolsEyes/Scripts/send_full_regression_mail.sh "ios_images";
+                  fi
+
+        - stage: release-event
+          if: tag =~ ^(EyesXCUI|EyesImages)@[0-9]+\.[0-9]+\.[0-9]+$ AND fork == false
+          script:
+              # Send notification about the tests execution status
+              # The ALLOWED_RELEASE_COMMITERS should be set in Travis CI settings
+              - echo $TMP_CHANGELOG;
+              # Save the email of the person who did this commit in COMMITTER_EMAIL
+              - COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")";
+              - if [[ ("$ALLOWED_RELEASE_COMMITERS" =~ .*"$COMMITTER_EMAIL".*) ]]; then
+                    echo "RELEASE EVENT";
+                    TEST_COVERAGE_GAP=$(cat ApplitoolsEyes/${SDK_NAME}/testCoverageGap.txt);
+                    if [[ "$SDK_NAME" == "EyesXCUI" ]]; then
+                        SHORT_SDK_NAME="ios_xcui";
+                    elif [[ "$SDK_NAME" == "EyesImages" ]]; then
+                        SHORT_SDK_NAME="ios_images";
+                    else
+                        echo "RELEASE EVENT FAILED - UNKNOWN IOS SDK NAME";
+                        exit 2;
+                    fi
+                    
+                    sh ApplitoolsEyes/Scripts/send_release_mail.sh "$SHORT_SDK_NAME" "$SDK_VERSION" "$CHANGELOG" "$TEST_COVERAGE_GAP";
+                    echo "RELEASE EVENT SUCCESSFUL";
+                else
+                    echo "RELEASE EVENT FAILED - COMMITER'S EMAIL IS NOT ALLOWED ";
+                    exit 1;
+                fi
