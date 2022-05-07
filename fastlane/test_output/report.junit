@@ -1,18 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <testsuites name='ReferenceiOSUITests.xctest' tests='5' failures='0'>
   <testsuite name='ReferenceiOSUITests.buttonFunctionTest' tests='1' failures='0'>
-    <testcase classname='ReferenceiOSUITests.buttonFunctionTest' name='testbuttonFunctionValidation' time='8.611'/>
+    <testcase classname='ReferenceiOSUITests.buttonFunctionTest' name='testbuttonFunctionValidation' time='8.364'/>
   </testsuite>
   <testsuite name='ReferenceiOSUITests.deviceOrientationTest' tests='1' failures='0'>
-    <testcase classname='ReferenceiOSUITests.deviceOrientationTest' name='testChangeOrientation' time='9.067'/>
+    <testcase classname='ReferenceiOSUITests.deviceOrientationTest' name='testChangeOrientation' time='9.200'/>
   </testsuite>
   <testsuite name='ReferenceiOSUITests.euroValueChangingTest' tests='1' failures='0'>
-    <testcase classname='ReferenceiOSUITests.euroValueChangingTest' name='testEuroRandomValue' time='8.948'/>
+    <testcase classname='ReferenceiOSUITests.euroValueChangingTest' name='testEuroRandomValue' time='9.063'/>
   </testsuite>
   <testsuite name='ReferenceiOSUITests.euroValueRangeVerification' tests='1' failures='0'>
-    <testcase classname='ReferenceiOSUITests.euroValueRangeVerification' name='testEuroValueRange' time='5.761'/>
+    <testcase classname='ReferenceiOSUITests.euroValueRangeVerification' name='testEuroValueRange' time='7.908'/>
   </testsuite>
   <testsuite name='ReferenceiOSUITests.uiVerificationTest' tests='1' failures='0'>
-    <testcase classname='ReferenceiOSUITests.uiVerificationTest' name='testUIScreenValidations' time='18.753'/>
+    <testcase classname='ReferenceiOSUITests.uiVerificationTest' name='testUIScreenValidations' time='19.615'/>
   </testsuite>
 </testsuites>

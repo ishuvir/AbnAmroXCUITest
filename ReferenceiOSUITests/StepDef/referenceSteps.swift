@@ -85,7 +85,9 @@ extension referenceBase {
     func thenButtonIsDisplayed() {
         XCTContext.runActivity(named: "Then I should see Button ") { _ in
             XCTAyncAssert(referencePage.ButtonType.element)
+    //        screenshotActivity()
         }
+    
     }
     
     func whenUserClickedButton() {
@@ -120,6 +122,7 @@ extension referenceBase {
             print(euroValueResult)
             XCTAssertTrue(euroValueResult)
             print("Euro value displayed  " + referencePage.euroTextField.element.label)
+      //      screenshotActivity()
         }
         
         }
@@ -132,6 +135,7 @@ extension referenceBase {
             let afterValue=getCurrencyValue(referencePage.euroTextField.element)
             print("euro value After   " , afterValue)
             XCTAssertNotEqual(beforeValue, afterValue)
+   //         screenshotActivity()
            }
         
         }
@@ -140,6 +144,7 @@ extension referenceBase {
           XCTContext.runActivity(named: "Verifing Currency range") { _ in
               let valueRangeStatus = (100..<99999999).contains(getCurrencyValue(referencePage.euroTextField.element))
                XCTAssertTrue(valueRangeStatus)
+     //         screenshotActivity()
           }
     }
         
@@ -148,6 +153,7 @@ extension referenceBase {
             thenHelloIsNotDisplayed(initialText : "Hello" )
             thenEuroValueDisplayed(euroIcon : "€" )
                 thenEuroValueDiffer()
+     //           screenshotActivity()
                 portraitOrientation()
             }
         }

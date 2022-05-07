@@ -51,6 +51,16 @@ class referenceBase: XCTestCase {
         }
     }
     
+    func screenshotActivity(){
+        XCTContext.runActivity(named: "Added ScreenShot") { (activity) in
+                    let screen = XCUIScreen.main
+                    let fullscreenshot = screen.screenshot()
+                    let fullScreenshotAttachment = XCTAttachment(screenshot: fullscreenshot)
+                    fullScreenshotAttachment.lifetime = .keepAlways
+                    activity.add(fullScreenshotAttachment)
+        }
+    }
+    
     func XCTAyncAssert(_ element: XCUIElement)
     {
         let isElementExist = element.waitForExistence(timeout: 10)
