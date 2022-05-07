@@ -8,7 +8,7 @@ iOS assignment is performed using XCUITest native (iOS testing framework)
 * applitool
 * Xcode Simulator
 * GitHUB
-* Travis CI
+* Travis CI / XCODE CI (Server & Bot)
 
 **Language**
 --
